@@ -1,0 +1,285 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[french]{babel}
+\usepackage[english]{babel}
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{amsmath}
+\usepackage{scrextend}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{blindtext}
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{$#2$}}%
+\newcommand*{\Resize}[2]{\resizebox{#1}{!}{$#2$}}%
+\usepackage{enumitem}
+\usepackage{listingsutf8}
+\usepackage{listings}
+\usepackage{soul}
+\usepackage{float}
+\usepackage{epstopdf}
+\usepackage{subfig}
+\usepackage{amssymb}
+\setlist{leftmargin=5.5mm}
+\usepackage[margin=1.1in]{geometry}
+\usepackage[all]{xy}
+\usepackage{pdflscape}
+\usepackage{longtable} 
+\usepackage{cite}
+\usepackage[hyphens]{url}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{breaklinks=true}
+\urlstyle{same}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\usepackage{pythonhighlight}
+\usepackage{xcolor}
+\lstset{basicstyle=\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue}
+}
+
+
+
+
+
+
+
+
+
+\usepackage{setspace}
+\setlength{\intextsep}{3mm}
+
+% Pacote para a definição de novas cores
+\usepackage{xcolor}
+% Definindo novas cores
+\definecolor{seagreen}{rgb}{0.18, 0.55, 0.34}
+\definecolor{whitesmoke}{rgb}{0.96, 0.96, 0.96}
+\definecolor{verde}{rgb}{0.25,0.5,0.35}
+\definecolor{jpurple}{rgb}{0.5,0,0.35}
+\definecolor{darkgreen}{rgb}{0.0, 0.2, 0.13}
+%\definecolor{oldmauve}{rgb}{0.4, 0.19, 0.28}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\begin{document}
+\begin{titlepage}
+
+
+\center % Center everything on the page
+ 
+
+\textsc{\LARGE Université de Pau et des Pays de l’Adour}\\[1.3cm] % Name of your university/college
+
+\textsc{\Large Principes et architecture des réseaux }\\[0.6cm] % Major heading such as course name
+\textsc{\large (BUT1 RT TP G2A)}\\[0.6cm] % Minor heading such as course title
+
+\HRule \\[0.4cm]
+{ \huge \bfseries SAÉ - 1.02 : Réseaux informatiques}\\[0.4cm] % Title of your document
+
+\HRule \\[1.5cm]
+
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Élèves :}\\[.5cm]
+Alexis Déhu 
+\\[.5cm]
+Martin Motz\\[.5cm]
+
+\end{flushleft}
+\end{minipage}
+~
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Enseignant :} \\
+Stéphane Mascaron \end{flushright}
+\end{minipage}\\[3cm]
+
+\end{titlepage}
+
+
+\begin{document}
+
+\textsc{\textbf{Préambule}}{\textwidth}\\
+
+Lors de cette SAÉ nous avons volontairement pas usé d’applications et/ou de logiciels pour effectuer nos manipulations. Ainsi nous utilisons uniquement des commandes bash présentes nativement sur la plupart des systèmes d’exploitation utilisant ce shell comme Ubuntu ou Debian par exemple.\\
+En conséquent, le nombre d'étapes et de manipulations se veut plus conséquent que si nous avions utilisé des outils pour effectuer les mêmes tâches.
+\newline
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction} 
+\noindent Le principe de cette SAÉ consiste à configurer un micro-ordinateur Raspberry Pi ("RPI") ainsi qu'une machine virtuelle ("VM") dans le réseau de l'IUT afin d'y connecter le RPI et de pouvoir y accéder depuis n'importe quelle machine du réseau local de l'IUT (LAN) via la VM.\\
+Le RPI sera accessible depuis une connexion SSH et devra accéder à Internet, donc aux réseaux extérieurs (WAN).\\
+\noindent Nous avons utilisé une VM Ubuntu 18.04 comme système d'exploitation pour la préparation du RPI et pour la VM.\\
+\noindent Les commandes précédées d'un hashtag seront à être exécutées avec les droits administrateurs.
+
+\section{Approche du projet}
+\subsection{Attentes du SAÉ}
+\subsubsection{Matériel utilisé}
+\begin{itemize}
+    \item[•] Micro-ordinateur Raspberry Pi 4 (8 Go) et son alimentation -- "RPI"
+    \item[•] Carte micro SD 32 Go
+    \item[•] Adaptateur micro SD vers USB A -- "Adaptateur"
+    \item[•] Machine virtuelle Ubuntu 18.04 sous \href{http://vi4rt.univ-pau.fr/}{VI4RT} -- "VM"
+    \item[•] Câbles RJ45 Ethernet droits
+    \item[•] Capteur DHT20 avec brins de connexion
+    \item[•] Résistance 10 Kilo Ohm
+\end{itemize}
+\subsubsection{Solutions que nous apportons}
+Afin de répondre aux attentes du SAÉ nous allons monter une image de \href{https://www.raspberrypi.com/software/operating-systems/}{Raspberry Pi OS Lite}, système d'exploitation propriétaire de Raspberry sur notre RPI avec un nom d'utilisateur et un mot de passe personnalisés. Nous devrons aussi ouvrir le port 22 du RPI afin de pouvoir y accéder via une connexion SSH. Sa configuration réseau sera aussi à vérifier.\\
+\\
+En suivant, sur une VM créée sur VI4RT nous allons configurer un serveur DHCP auquel nous rattacherons notre RPI afin qu'il puisse se connecter au réseau local de l'IUT (LAN) via l'addresse IP que notre VM lui aura attribuée. Nous allons aussi configurer cette VM pour permettre au RPI d'accéder aux réseaux extérieurs à celui de l'IUT (WAN).\\
+Le RPI sera accessible via une connexion SSH depuis le LAN de l'IUT et pourra être utilisé comme une machine normale du réseau avec un accès à l'extérieur.\\
+\\
+En supplément de l'accessibilité du RPI sur le réseau, un capteur sera branché à ses pins afin de récupérer la témpérature et l'humidité ambiantes. Un programme Python lira et affichera les données reçues du capteur sur la sortie standard de la machine ayant initiée la connexion SSH sur le RPI.
+\subsection{Schématisation de notre solution}
+\subsubsection{Infrastructure réseau résumée}
+\begin{figure}[!h]
+    \centering
+    \includegraphics[scale=0.4]{Screenshot from 2022-11-22 11-16-47.png}
+    \caption{Diagramme réseau simplifié de notre installation}
+    \label{fig:my_label}
+\end{figure}
+Le RPI est ici branché sur l'interface Passthrough1 de la VM, pas de restriction quant au masque de sous-réseau ou les adresses choisies car étant notre propre réseau local. L'adresse de la VM sera considérée comme celle du routeur par les équipements de ce LAN (192.168.0.0/24 dans notre cas).\\
+\\
+\noindent L'interface Bridge1 est reliée au réseau de l'IUT avec une adresse IP statique définie sur la plage d'adresses IP que le switch principal de l'IUT nous accorde. Ici en exemple .4 la plage d'adresse étant de 10.2.18.4 à 10.2.18.7 sur le poste TITI de la salle TP Réseaux sur lequel la configuration a été faite.\\
+\\
+\noindent Le NAT sera aussi activé sur l'interface Bridge1 de notre VM pour que le RPI puisse communiquer avec le réseau le LAN de l'IUT (10.2.18.0/24) et le WAN.
+
+\subsubsection{Illustration connexion du capteur au Raspberry Pi}
+Le PIN le plus à gauche du capteur vu de haut est appelé VCC, c'est-à-dire l'alimentation en +5V que va lui fournir le pin numéro 2 dit 5V PWR du RPI.\\
+\\
+Le deuxième pin du capteur est celui des données DATA rattaché à une résistance pull-up de 10 K Ohms dans notre cas d'usage (10 K Ohms étant le maximum, 4.7 K Ohms étant le minimum possible). \\Ce deuxième pin est aussi placé sur le pin GPIO 4 afin de récupérer les données, à noter qu'il peut être placer sur n'importe quel pin GPIO du RPI.\\
+\\
+Le quatrième est dernier pin du capteur est celui de la masse GND rattaché à celui du RPI.
+\begin{figure}[!h]
+    \centering
+    \includegraphics[scale=0.3]{grayscale_rpi.png}
+    \caption{Schéma des branchements du capteur DHT20 sur le RPI}
+    \label{fig:my_label}
+\end{figure}
+\section{Préparation du Raspberry Pi}
+\subsection{Mise en place du SE}
+\subsubsection{Récupération de l'image du SE}
+Nous allons récupérer la dernière image en date du système d'exploitation propriétaire de Raspberry pour ses Raspberry Pi: \href{https://www.raspberrypi.com/software/operating-systems/}{Raspberry Pi OS}. Nous utiliserons sa version Lite, ne contenant pas d'environnement de bureau, elle utilisera donc moins de stockage et de ressources matérielles (ne contenant pas les paquets pour et ne l'exécutant pas).
+\definecolor{light-gray}{gray}{0.95}
+\lstset{columns=fullflexible, basicstyle=\ttfamily,
+    backgroundcolor=\color{light-gray},xleftmargin=0.5cm,frame=tlbr,framesep=4pt,framerule=0pt}
+\begin{lstlisting}
+    $ wget https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_
+      lite_armhf-2022-09-26/2022-09-22-raspios-bullseye-armhf-lite.img.xz
+\end{lstlisting}
+\subsubsection{Découverte de la location du périphérique de stockage}
+\notindent Pour mettre le système d'exploitation sur la carte micro SD du RPI par la suite, nous devons connecter sa carte micro SD sur notre machine via l'adaptateur.\\
+\noindent Après cela nous devons trouver l'emplacement de la carte micro SD sur notre machine ainsi que son nom de lecteur.\\
+(les commandes précédées d'un hashtag et marquée en rouge doivent être lancées avec les droits administrateurs)
+\definecolor{light-gray}{gray}{0.95}
+\lstset{columns=fullflexible, basicstyle=\ttfamily,
+    backgroundcolor=\color{light-gray},xleftmargin=0.5cm,frame=tlbr,framesep=4pt,framerule=0pt}
+\begin{lstlisting}
+    # lshw -C disk
+\end{lstlisting}
+\noindent Voici un exemple de sortie de cette commande.
+\begin{lstlisting}[language=bash]
+    CHANGER SORTIE DE COMMANDE LSHW
+\end{lstlisting}
+\subsubsection{Flash de l'image du SE sur la carte micro SD}
+Nous avons l'image à "flasher" sur la carte micro SD ainsi que l'emplacement du périphérique de stockage. Nous devons maintenant écrire le contenu du fichier récupéré sur la carte micro SD.\\
+\noindent Le premier argument de la commande est l'emplacement du fichier lu, dans cette demonstration elle se situe à l'emplacement où le terminal a été lancé.\\
+\noindent La carte micro SD a comme emplacement /dev/sda vu 3.1.2.
+\definecolor{light-gray}{gray}{0.95}
+\lstset{columns=fullflexible, basicstyle=\ttfamily,
+    backgroundcolor=\color{light-gray},xleftmargin=0.5cm,frame=tlbr,framesep=4pt,framerule=0pt}
+\begin{lstlisting}
+    # xzcat 2022-09-06-raspios-bullseye-armhf-lite.img.xz | sudo dd
+      bs=4M of =/dev/sda
+\end{lstlisting}
+\subsection{Configuration du SE avant déploiement}
+\subsubsection{Création d'un utilisateur et d'un mot de passe}
+Afin de créer un utilisateur et un mot de passe personnalisés sur notre RPI, nous devons modifier un fichier de configuration du système d'exploitation du RPI avant son déploiement.\\ 
+\\Pour cela nous devons d'abord débrancher et rebrancher l'adaptateur sur la machine afin que le carte micro SD soit reconnue comme un dispositif de stockage utilisable par le SE que nous utilisons.\\
+Dans notre cas la carte micro SD est reconnue avec comme chemin d'accès \textbf{/run/media/alexis/}, "alexis" étant le nom d'utilisateur de ma session. Elle peut être observée dans l'explorateur de fichier de votre SE.\\
+Nous devons ensuite modifier le fichier se trouvant dans /boot/userconf.txt sur la carte micro SD, le chemin absolu de ce fichier dans mon cas est donc \textbf{/run/media/alexis/boot/userconf.txt}.\\
+\\
+Pour éviter de fournir le mot de passe en clair dans le fichier de configuration nous allons utiliser la commande \textbf{openssl} pour générer un mot de passe chiffré étant \textbf{"mypassword"} et l'attribuer à l'utilisateur \textbf{"alexispi"} tout cela dans le fichier \textbf{userconf.txt}.
+\definecolor{light-gray}{gray}{0.95}
+\lstset{columns=fullflexible, basicstyle=\ttfamily,
+    backgroundcolor=\color{light-gray},xleftmargin=0.5cm,frame=tlbr,framesep=4pt,framerule=0pt}
+\begin{lstlisting}
+    $ echo "alexispi:(echo 'mypassword' | openssl passwd -6 -stdin)" 
+      > /run/media/alexis/boot/userconf.txt
+\end{lstlisting}
+\subsubsection{Configuration réseau du SE}
+La configuration réseau initiale de Raspberry Pi OS repose sur l'attente d'une réponse DHCP sur l'interface RJ45 Ethernet.\\
+Cependant si vous souhaitez confiugurer le RPI sur son interface Wi-Fi IEEE lors son premier démarrage vous pouvez configurer le fichier \textbf{etc/wpa\_supplicant/wpa\_supplicant.conf} présent sur la carte micro SD.\\
+\\Dans notre cas d'usage, nous laissons le RPI se connecter sur le LAN de l'IUT via son interface RJ45 Ethernet, nous utiliserons une VM faisant notamment office de serveur DHCP pour lui attribuer une adresse.\\
+Pas de manipulation à faire dans notre cas.
+\subsubsection{Activation du service SSH}
+Nous initierons par la suite une connexion SSH (
+\section{Déploiement du serveur DHCP}
+\subsection{Explications sur notre serveur DHCP}
+\subsection{Création de la machine virtuelle}
+\subsection{Configuration de l'interface côté réseau de l'IUT}
+\subsubsection{Attribution d'une adresse IP statique à l'interface}
+\subsubsection{Reinseignement de l'adresse IP du serveur DNS}
+\subsection{Installation du service DHCP}
+\subsubsection{Mise à jour des paquets du système}
+dire pb libappstream4 aucasou
+\subsubsection{Installation d'un paquet de service de DHCP}
+\subsection{Configuration de l'interface côté appareils}
+\subsubsection{Sauvegarde de l'ancienne configuration de l'interface}
+\subsubsection{Sauvegarde et modification du fichier de configuration DHCP}
+\subsubsection{Vérification de l'état du service réseau}
+\subsubsection{Vérification de l'état du service DHCP}
+\section{Configuration d'un NAT}
+\subsection{Explication de l'intérêt du NAT}
+\subsection{Activation du NAT}
+\subsection{Configuration du routeur NAT}
+\subsubsection{Configuration de l'interface pour accepter le NAT}
+\subsection{Contrôles supplémentaires après configuration}
+\subsubsection{Vérification des routes IP}
+\subsubsection{Initialisation d'une connexion SSH}
+\subsection{Script d'automatisation optionnel}
+\subsubsection{Script shell de configuration des services}
+\section{Utilisation du capteur DHT20}
+\subsection{Explications sur l'utilisation du capteur}
+\subsection{Branchement sur le Raspberry Pi}
+\subsubsection{Schéma de branchement}
+\subsubsection{Photophraphie du branchement}
+\subsection{Programme Python pour utiliser le capteur}
+\begin{python}
+import time, board, adafruit_dht
+
+dht_device = adafruit_dht.DHT22(board.D4) # Charge le capteur sur le PIN GPIO 4
+
+while True:
+    try:
+        temperature, humidity = dht_device.temperature, dht_device.humidity 
+        # Recupere les donnees du capteur
+        print("Temperature: " + str(temperature) + " C, Humidite: " + str(humidity) + "%", end="\r") 
+        # Affiche ces donnees dans la console
+    except RuntimeError: 
+    # Il arrive que les donnees du capteur arrivent dans le Raspberry en etant corrompues, on ignore donc cette erreur
+        time.sleep(2.0) # Pause de 2 secondes
+        continue # On continue la boucle
+    except Exception as error: 
+    # Cette erreur est consideree comme grave, elle n'est pas censee arriver mais protection par precaution
+        dht_device.exit() # Ferme proprement la liaison capteur-programme si erreur
+        raise error # Laisse l'erreur interrompre le programme
+    time.sleep(2.0) # Raffraichissement toutes les 2 secondes 
+\end{python}
+\subsection{Exemple de sortie du programme Python}
+\begin{python}
+    Temperature: 24.2 °C, Humidite: 57.7%
+\end{python}
+\includegraphics[scale=0.27]{SCR-20221120-slf-2.png}
+
+\end{document}
